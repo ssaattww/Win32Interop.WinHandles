@@ -55,6 +55,44 @@ namespace Win32Interop.WinHandles
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="parents"></param>
+    /// <param name="windowPredicate"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
+    public static IEnumerable<IEnumerable<WindowHandle>> FindChildWindows(this IEnumerable<WindowHandle> parents, Predicate<WindowHandle> windowPredicate)
+    {
+        if (windowPredicate == null)
+            throw new ArgumentNullException(nameof(windowPredicate));
+
+        foreach(var parent in parents)
+        {
+            List<WindowHandle> windows = null;
+
+            NativeMethods.EnumChildWindows(parent.RawPtr, (ptr, param) =>
+            {
+                var window = new WindowHandle(ptr);
+                if (windowPredicate.Invoke(window))
+                {
+                    if (windows == null)
+                    {
+                        windows = new List<WindowHandle>();
+                    }
+
+                    windows.Add(window);
+                }
+
+                return NativeMethods.EnumWindows_ContinueEnumerating;
+            },
+            IntPtr.Zero);
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            yield return windows ?? Enumerable.Empty<WindowHandle>();
+        }
+    }
+
+    /// <summary>
     ///  Searches for the first window that matches the predicate.
     /// </summary>
     /// <exception cref="ArgumentNullException"> Thrown when one or more required

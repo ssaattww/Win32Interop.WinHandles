@@ -19,6 +19,10 @@ namespace Win32Interop.WinHandles.Internal
     public static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
 
     [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool EnumChildWindows(IntPtr handle, EnumWindowsProc enumProc, IntPtr lParam);
+
+    [DllImport("user32.dll")]
     internal static extern IntPtr FindWindow(string sClassName, string sAppName);
 
     [DllImport("user32.dll")]

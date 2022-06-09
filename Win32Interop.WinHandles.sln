@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win32Interop.WinHandles", "src\Win32Interop.WinHandles\Win32Interop.WinHandles.csproj", "{632F72C0-0D20-48D3-B432-59F1C647B55D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Win32Interop.WinHandles.Tests", "src\Win32Interop.WinHandles.Tests\Win32Interop.WinHandles.Tests.csproj", "{53826F8F-FE69-4EE9-8DA9-08FD32EC7DF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowHandleSample", "WindowHandleSample\WindowHandleSample.csproj", "{99D62F3B-9936-4614-B07D-1876C493729D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +23,15 @@ Global
 		{53826F8F-FE69-4EE9-8DA9-08FD32EC7DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53826F8F-FE69-4EE9-8DA9-08FD32EC7DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53826F8F-FE69-4EE9-8DA9-08FD32EC7DF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99D62F3B-9936-4614-B07D-1876C493729D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99D62F3B-9936-4614-B07D-1876C493729D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99D62F3B-9936-4614-B07D-1876C493729D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99D62F3B-9936-4614-B07D-1876C493729D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {76AC2F76-56B8-4A39-900C-E7AC95FDA402}
 	EndGlobalSection
 EndGlobal
