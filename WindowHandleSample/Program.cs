@@ -25,14 +25,12 @@ namespace WindowHandleSample
             //Console.WriteLine(cmdHist);
             //Console.WriteLine(cmdLine);
 
-            var filterWindowCmb = windows.
+            windows.
                 Where(w => w.GetWindowText() == "オブジェクト選択フィルタ")
                 .FindChildWindows(w => w.GetClassName() == "ComboBox")
                 .SelectMany(s => s)
                 .FirstOrDefault()
-                .SelectCbItem()
-
-            filterWindowCmb.ForEach(s => Console.WriteLine(s));
+                .SelectCbItem("シェイプ");
 
             Console.ReadLine();
 

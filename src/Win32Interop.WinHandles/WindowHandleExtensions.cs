@@ -19,6 +19,7 @@ namespace Win32Interop.WinHandles
         private const uint WM_GETTEXTLENGTH = 0x000E;
         private const uint WM_COPYDATA = 0x004A;
         private const uint WM_NULL = 0x0000;
+        private const uint WM_COMMAND = 0x0111;
         private const int CB_SETCURSEL = 0x014E;
         private const int CB_FINDSTRINGEXACT = 0x158;
         private const int CB_SELECTSTRING = 0x14D;
@@ -131,7 +132,11 @@ namespace Win32Interop.WinHandles
                 if(index != (IntPtr)(-1))
                 {
                     NativeMethods.SendMessageW(windowHandle.RawPtr, CB_SETCURSEL, index, IntPtr.Zero);
-
+                    var parentPtr = NativeMethods.GetParent(windowHandle.RawPtr);
+                    if(parentPtr != IntPtr.Zero)
+                    {
+                        NativeMethods.PostMessage(parentPtr, WM_COMMAND, MakeParam(windowHandle.RawPtr), windowHandle.RawPtr);
+                    }
                 }
             }
 
@@ -140,7 +145,7 @@ namespace Win32Interop.WinHandles
 
         private static IntPtr MakeParam(IntPtr intPtr)
         {
-            IntPtr id = NativeMethods.GetWindowLongPtr64(intPtr, GWL_ID);
+            IntPtr id = NativeMethods.GetWindowLongPtr(intPtr, GWL_ID);
             return (IntPtr)(CBN_SELECHANGE | (id.ToInt64() & 0xFFFF));
         }
     }
