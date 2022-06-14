@@ -19,6 +19,12 @@ namespace Win32Interop.WinHandles
         private const uint WM_GETTEXTLENGTH = 0x000E;
         private const uint WM_COPYDATA = 0x004A;
         private const uint WM_NULL = 0x0000;
+        private const int CB_SETCURSEL = 0x014E;
+        private const int CB_FINDSTRINGEXACT = 0x158;
+        private const int CB_SELECTSTRING = 0x14D;
+        private const int CBN_SELECHANGE = 0x10000;
+        private const int GWL_ID = -12;
+
 
         /// <summary> Check if the given window handle is currently visible. </summary>
         /// <param name="windowHandle"> The window to act on. </param>
@@ -78,6 +84,20 @@ namespace Win32Interop.WinHandles
         }
 
         /// <summary>
+        /// GetWindowText cannot get textedit`s string. So use this.
+        /// </summary>
+        /// <param name="windowHandle"></param>
+        /// <returns>The text.</returns>
+        public static string GetWindowStrW(this WindowHandle windowHandle)
+        {
+            var len = NativeMethods.SendMessageW(windowHandle.RawPtr, WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
+            var msg = new string('\0', len.ToInt32()*2);
+
+            NativeMethods.SendMessageW(windowHandle.RawPtr, WM_GETTEXT, (IntPtr)(len.ToInt32()*2), msg);
+            return msg;
+        }
+
+        /// <summary>
         /// Put string to the given window
         /// </summary>
         /// <param name="windowHandle"></param>
@@ -96,6 +116,32 @@ namespace Win32Interop.WinHandles
             NativeMethods.PostMessage(windowHandle.RawPtr, WM_NULL, IntPtr.Zero, IntPtr.Zero);
 
             return ret.ToInt32() == 1;
+        }
+
+        /// <summary>
+        /// select combo box item from name
+        /// </summary>
+        /// <param name="windowHandle"></param>
+        /// <param name="itemName"></param>
+        public static bool SelectCbItem(this WindowHandle windowHandle, string itemName)
+        {
+            if(windowHandle.GetClassName() == "ComboBox")
+            {
+                var index = NativeMethods.SendMessageW(windowHandle.RawPtr, CB_SELECTSTRING, (IntPtr)(-1), itemName);
+                if(index != (IntPtr)(-1))
+                {
+                    NativeMethods.SendMessageW(windowHandle.RawPtr, CB_SETCURSEL, index, IntPtr.Zero);
+
+                }
+            }
+
+            return false;
+        }
+
+        private static IntPtr MakeParam(IntPtr intPtr)
+        {
+            IntPtr id = NativeMethods.GetWindowLongPtr64(intPtr, GWL_ID);
+            return (IntPtr)(CBN_SELECHANGE | (id.ToInt64() & 0xFFFF));
         }
     }
 }

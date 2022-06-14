@@ -12,18 +12,27 @@ namespace WindowHandleSample
         static void Main(string[] args)
         {
             var windows = TopLevelWindowUtils.FindWindows(w => w.IsValid);
-            var cmds = windows
-                .Where(w => w.GetWindowText().Contains("テキスト ウィンドウ"))
-                .FindChildWindows(w => w.GetClassName() == "AfxFrameOrView140u").FirstOrDefault()
-                .FindChildWindows(w => w.GetWindowText() == "Marin").FirstOrDefault()
-                .FindChildWindows(w => true)
+            //var cmds = windows
+            //    .Where(w => w.GetWindowText().Contains("テキスト ウィンドウ"))
+            //    .FindChildWindows(w => w.GetClassName() == "AfxFrameOrView140u").FirstOrDefault()
+            //    .FindChildWindows(w => w.GetWindowText() == "Marin").FirstOrDefault()
+            //    .FindChildWindows(w => true)
+            //    .SelectMany(s => s)
+            //    .Where(w => w.IsValid);
+            //var cmdLine = cmds.Where(w => w.GetWindowText() == "Headlands").FirstOrDefault().GetWindowStr();
+            //var cmdHist = cmds.Where(w => w.GetWindowText() == "MountTam").FirstOrDefault().GetWindowStr();
+
+            //Console.WriteLine(cmdHist);
+            //Console.WriteLine(cmdLine);
+
+            var filterWindowCmb = windows.
+                Where(w => w.GetWindowText() == "オブジェクト選択フィルタ")
+                .FindChildWindows(w => w.GetClassName() == "ComboBox")
                 .SelectMany(s => s)
-                .Where(w => w.IsValid);
-            var cmdLine = cmds.Where(w => w.GetWindowText() == "Headlands").FirstOrDefault().GetWindowStr();
-            var cmdHist = cmds.Where(w => w.GetWindowText() == "MountTam").FirstOrDefault().GetWindowStr();
-            
-            Console.WriteLine(cmdHist);
-            Console.WriteLine(cmdLine);
+                .FirstOrDefault()
+                .SelectCbItem()
+
+            filterWindowCmb.ForEach(s => Console.WriteLine(s));
 
             Console.ReadLine();
 
