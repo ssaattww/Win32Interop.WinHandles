@@ -20,11 +20,14 @@ namespace Win32Interop.WinHandles
         private const uint WM_COPYDATA = 0x004A;
         private const uint WM_NULL = 0x0000;
         private const uint WM_COMMAND = 0x0111;
+        private const uint WM_SETTEXT = 0x000C;
         private const int CB_SETCURSEL = 0x014E;
         private const int CB_FINDSTRINGEXACT = 0x158;
         private const int CB_SELECTSTRING = 0x14D;
         private const int CBN_SELECHANGE = 0x10000;
+        private const int BM_CLICK = 0x00F5;
         private const int GWL_ID = -12;
+
 
 
         /// <summary> Check if the given window handle is currently visible. </summary>
@@ -120,6 +123,22 @@ namespace Win32Interop.WinHandles
         }
 
         /// <summary>
+        /// Set text with given handle
+        /// </summary>
+        /// <param name="windowHandle"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static bool SetText(this WindowHandle windowHandle, string text)
+        {
+            if(windowHandle.GetClassName() == "Edit")
+            {
+                NativeMethods.SendMessageW(windowHandle.RawPtr, WM_SETTEXT, IntPtr.Zero, text);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// select combo box item from name
         /// </summary>
         /// <param name="windowHandle"></param>
@@ -135,14 +154,27 @@ namespace Win32Interop.WinHandles
                     var parentPtr = NativeMethods.GetParent(windowHandle.RawPtr);
                     if(parentPtr != IntPtr.Zero)
                     {
-                        NativeMethods.PostMessage(parentPtr, WM_COMMAND, MakeParam(windowHandle.RawPtr), windowHandle.RawPtr);
+                        NativeMethods.SendMessage(parentPtr, WM_COMMAND, MakeParam(windowHandle.RawPtr), windowHandle.RawPtr);
                     }
                 }
             }
-
             return false;
         }
 
+        /// <summary>
+        /// Click button class
+        /// </summary>
+        /// <param name="windowHandle"></param>
+        /// <returns></returns>
+        public static bool ClickButton(this WindowHandle windowHandle)
+        {
+            if(windowHandle.GetClassName() == "Button")
+            {
+                NativeMethods.SendMessage(windowHandle.RawPtr, BM_CLICK, IntPtr.Zero, IntPtr.Zero);
+                return true;
+            }
+            return false;
+        }
         private static IntPtr MakeParam(IntPtr intPtr)
         {
             IntPtr id = NativeMethods.GetWindowLongPtr(intPtr, GWL_ID);
