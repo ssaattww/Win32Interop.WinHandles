@@ -211,6 +211,26 @@ namespace Win32Interop.WinHandles
             return windows ?? Enumerable.Empty<WindowHandle>();
         }
 
+        /// <summary>
+        /// 一列目のサブアイテムのテキストを元に選択する。
+        /// </summary>
+        /// <param name="windowHandle"></param>
+        /// <param name="itemName"></param>
+        public static void SelectListViewItem(this WindowHandle windowHandle, string itemName)
+        {
+            if (windowHandle.GetClassName() == "SysListView32")
+            {
+                var rowNum = GetListViewItem.ListViewHandle.Count(windowHandle.RawPtr);
+                for(int i=0;i<rowNum;i++)
+                {
+                    if(GetListViewItem.ListViewHandle.GetItemText(windowHandle.RawPtr, i, 0) == itemName)
+                    {
+                        GetListViewItem.ListViewHandle.SelectRow(windowHandle.RawPtr, i);
+                    }
+                }
+            }
+        }
+
         private static IntPtr MakeParam(IntPtr intPtr)
         {
             IntPtr id = NativeMethods.GetWindowLongPtr(intPtr, GWL_ID);

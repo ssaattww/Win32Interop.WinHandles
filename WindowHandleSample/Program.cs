@@ -14,7 +14,7 @@ namespace WindowHandleSample
     {
         static void Main(string[] args)
         {
-            method2();
+            method3();
             Console.ReadLine();
         }
 
@@ -107,19 +107,52 @@ namespace WindowHandleSample
         
         static void method2()
         {
+
             var windows = TopLevelWindowUtils.FindWindows(w => w.IsValid);
-            var exAttrWindow = windows.Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault();
-            var attrListView = exAttrWindow
+            var mainWindow = windows
+                .Where(w => w.GetWindowText().Contains("Autodesk"))
+                .Where(w => !w.GetWindowText().Contains("テキスト ウィンドウ"))
+                .FirstOrDefault();
+            mainWindow.SendHwndCommand("eattedit ");
+
+            var attrListView = windows
+                .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
                 .FindChildWindows(w => w.IsValid)
                 .Where(w => w.GetClassName().Contains("#"))
                 .FindChildWindows(w => w.GetClassName() == "SysListView32")
                 .SelectMany(s=>s)
                 .Where(w => w.IsValid).FirstOrDefault();
-
+            while (attrListView.IsValid != true)
+            {
+                windows = TopLevelWindowUtils.FindWindows(w => w.IsValid);
+                attrListView = windows
+                    .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
+                    .FindChildWindows(w => w.IsValid)
+                    .Where(w => w.GetClassName().Contains("#"))
+                    .FindChildWindows(w => w.GetClassName() == "SysListView32")
+                    .SelectMany(s => s)
+                    .Where(w => w.IsValid).FirstOrDefault();
+                Thread.Sleep(50);
+            }
             var txt = ListViewHandle.GetItemText(attrListView.RawPtr, 0, 0);
             var num = ListViewHandle.Count(attrListView.RawPtr);
             ListViewHandle.SelectRow(attrListView.RawPtr, 5);
             Console.WriteLine($"text{txt}num{num}");
+
+            Console.WriteLine($"select nameplate");
+            attrListView.SelectListViewItem("NAME_PLATE");
+        }
+        static void method3()
+        {
+            var attrListView = TopLevelWindowUtils
+                .FindWindows(w => w.IsValid)
+                .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
+                .FindChildWindows(w => w.IsValid)
+                .Where(w => w.GetClassName().Contains("#"))
+                .FindChildWindows(w => w.GetClassName() == "SysListView32")
+                .SelectMany(s => s)
+                .Where(w => w.IsValid).FirstOrDefault();
+            attrListView.SelectListViewItem("ITEM_NO.");
         }
     }
 }
