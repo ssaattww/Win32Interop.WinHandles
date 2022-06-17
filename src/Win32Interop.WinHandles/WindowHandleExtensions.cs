@@ -175,6 +175,42 @@ namespace Win32Interop.WinHandles
             }
             return false;
         }
+
+        /// <summary>
+        /// Find child windows from given predicate
+        /// </summary>
+        /// <param name="windowHandle"></param>
+        /// <param name="windowPredicate"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IEnumerable<WindowHandle> FindChildWindows(this WindowHandle windowHandle, Predicate<WindowHandle> windowPredicate)
+        {
+            if (windowPredicate == null)
+                throw new ArgumentNullException(nameof(windowPredicate));
+
+            List<WindowHandle> windows = null;
+
+            NativeMethods.EnumChildWindows(windowHandle.RawPtr, (ptr, param) =>
+            {
+                var window = new WindowHandle(ptr);
+                if (windowPredicate.Invoke(window))
+                {
+                    if (windows == null)
+                    {
+                        windows = new List<WindowHandle>();
+                    }
+
+                    windows.Add(window);
+                }
+
+                return NativeMethods.EnumWindows_ContinueEnumerating;
+            },
+            IntPtr.Zero);
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            return windows ?? Enumerable.Empty<WindowHandle>();
+        }
+
         private static IntPtr MakeParam(IntPtr intPtr)
         {
             IntPtr id = NativeMethods.GetWindowLongPtr(intPtr, GWL_ID);

@@ -50,6 +50,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetListViewItem\CoTaskMem.cs" />
+    <Compile Include="GetListViewItem\ListViewHandle.cs" />
+    <Compile Include="GetListViewItem\ListViewHandleCustom.cs" />
+    <Compile Include="GetListViewItem\RemoteMemoryHandle.cs" />
+    <Compile Include="GetListViewItem\RemoteProcessHandle.cs" />
     <Compile Include="WindowHandle.cs" />
     <Compile Include="Internal\NativeMethods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
