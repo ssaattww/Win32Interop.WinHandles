@@ -130,7 +130,7 @@ namespace Win32Interop.WinHandles
         /// <returns></returns>
         public static bool SetText(this WindowHandle windowHandle, string text)
         {
-            if(windowHandle.GetClassName() == "Edit")
+            if(windowHandle.GetClassName() == "Edit" || windowHandle.GetClassName() == "RichEdit20A")
             {
                 NativeMethods.SendMessageW(windowHandle.RawPtr, WM_SETTEXT, IntPtr.Zero, text);
                 return true;

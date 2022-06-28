@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -166,39 +167,137 @@ namespace WindowHandleSample
             
             mainWindow.SendHwndCommand("eattedit ");
 
-            var attrListViewSource = Observable.Create<WindowHandle>(observer =>
+            //Observable.Defer(() => attrListViewSource)
+            //    .DelaySubscription(new TimeSpan(0, 0, 0, 0, 50))
+            //    .Retry()
+            //    .Subscribe(
+            //        s => s.SelectListViewItem("QT"),
+            //        ex => Console.WriteLine("OnError: {0}", ex),
+            //        () => Console.WriteLine("OnCompleted")
+            //    );
+
+            OListViewSource()
+                .DelaySubscription(new TimeSpan(0, 0, 0, 0, 50))
+                .Retry()
+                .Wait()
+                .SelectListViewItem("QT");
+
+            //OrichTbxSource()
+            //    .DelaySubscription(new TimeSpan(0, 0, 0, 0, 50))
+            //    .Retry()
+            //    .Wait()
+            //    .SetText("00");
+
+            var okBtn = TopLevelWindowUtils.FindWindows(w => w.IsValid)
+                .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
+                .FindChildWindows(w => w.IsValid)
+                .Where(w => w.GetWindowText()=="OK")
+                .FirstOrDefault();
+            
+            // okBtn.ClickButton();
+        }
+
+        static IObservable<WindowHandle> attrListViewSource = Observable.Create<WindowHandle>(observer =>
+        {
+            var attrListView = TopLevelWindowUtils.FindWindows(w => w.IsValid)
+            .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
+            .FindChildWindows(w => w.IsValid)
+            .Where(w => w.GetClassName().Contains("#"))
+            .FindChildWindows(w => w.GetClassName() == "SysListView32")
+            .SelectMany(s => s)
+            .Where(w => w.IsValid).FirstOrDefault();
+
+            if (attrListView.IsValid)
             {
-                var attrListView = TopLevelWindowUtils.FindWindows(w => w.IsValid)
+                attrListView.SelectListViewItem("QT");
+                observer.OnNext(attrListView);
+                observer.OnCompleted();
+            }
+            else
+            {
+                observer.OnError(new InvalidOperationException("拡張属性編集ウィンドウが見つかりません"));
+                Console.WriteLine("拡張属性編集ウィンドウが見つかりません");
+            }
+
+            return Disposable.Empty;
+        });
+
+        static IObservable<WindowHandle> richTbxSource = Observable.Create<WindowHandle>(observer =>
+        {
+            var richTbx = TopLevelWindowUtils.FindWindows(w => w.IsValid)
                 .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
                 .FindChildWindows(w => w.IsValid)
                 .Where(w => w.GetClassName().Contains("#"))
-                .FindChildWindows(w => w.GetClassName() == "SysListView32")
+                .FindChildWindows(w => w.GetClassName() == "RichEdit20A")
                 .SelectMany(s => s)
                 .Where(w => w.IsValid).FirstOrDefault();
 
-                if(attrListView.IsValid)
+            if(richTbx.IsValid)
+            {
+                observer.OnNext(richTbx);
+                observer.OnCompleted();
+            }
+            else
+            {
+                observer.OnError(new InvalidOperationException("拡張属性編集のテキストボックスが見つかりません"));
+                Console.WriteLine("拡張属性編集ウィンドウが見つかりません");
+            }
+
+            return Disposable.Empty;
+        });
+
+        static IObservable<WindowHandle> OrichTbxSource()
+        {
+            var s = new AsyncSubject<WindowHandle>();
+            new Task(() =>
+            {
+                var richTbx = TopLevelWindowUtils.FindWindows(w => w.IsValid)
+                    .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
+                    .FindChildWindows(w => w.IsValid)
+                    .Where(w => w.GetClassName().Contains("#"))
+                    .FindChildWindows(w => w.GetClassName() == "RichEdit20A")
+                    .SelectMany(w => w)
+                    .Where(w => w.IsValid).FirstOrDefault();
+
+                if (richTbx.IsValid)
                 {
-                    observer.OnNext(attrListView);
-                    observer.OnCompleted();
+                    s.OnNext(richTbx);
+                    s.OnCompleted();
                 }
                 else
                 {
-                    observer.OnError(new InvalidOperationException("拡張属性編集ウィンドウが見つかりません"));
-                    Console.WriteLine("not found");
+                    s.OnError(new InvalidOperationException("拡張属性編集のテキストボックスが見つかりません"));
+                    Console.WriteLine("拡張属性編集ウィンドウが見つかりません");
                 }
+            }).Start();
+            return s.AsObservable();
+        }
 
-                return Disposable.Empty;
-            });
+        static IObservable<WindowHandle> OListViewSource()
+        {
+            var s = new AsyncSubject<WindowHandle>();
+            new Task(() =>
+            {
+                var attrListView = TopLevelWindowUtils.FindWindows(w => w.IsValid)
+                    .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
+                    .FindChildWindows(w => w.IsValid)
+                    .Where(w => w.GetClassName().Contains("#"))
+                    .FindChildWindows(w => w.GetClassName() == "SysListView32")
+                    .SelectMany(w => w)
+                    .Where(w => w.IsValid).FirstOrDefault();
 
-            Observable.Defer(() => attrListViewSource)
-                .DelaySubscription(new TimeSpan(0, 0, 0, 0, 10))
-                .Retry()
-                .Subscribe(
-                    s => Console.WriteLine("OnNext: {0}", s),
-                    ex => Console.WriteLine("OnError: {0}", ex),
-                    () => Console.WriteLine("OnCompleted")
-                );
-
+                if (attrListView.IsValid)
+                {
+                    s.OnNext(attrListView);
+                    s.OnCompleted();
+                }
+                else
+                {
+                    s.OnError(new InvalidOperationException("拡張属性編集ウィンドウが見つかりません"));
+                    Console.WriteLine("拡張属性編集ウィンドウが見つかりません");
+                }
+            }).Start();
+            return s.AsObservable();
         }
     }
 }
