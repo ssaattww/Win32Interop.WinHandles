@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +16,7 @@ namespace WindowHandleSample
     {
         static void Main(string[] args)
         {
-            method3();
+            method4();
             Console.ReadLine();
         }
 
@@ -153,6 +155,50 @@ namespace WindowHandleSample
                 .SelectMany(s => s)
                 .Where(w => w.IsValid).FirstOrDefault();
             attrListView.SelectListViewItem("ITEM_NO.");
+        }
+
+        static void method4()
+        {
+            var mainWindow = TopLevelWindowUtils.FindWindows(w => w.IsValid)
+                .Where(w => w.GetWindowText().Contains("Autodesk"))
+                .Where(w => !w.GetWindowText().Contains("テキスト ウィンドウ"))
+                .FirstOrDefault();
+            
+            mainWindow.SendHwndCommand("eattedit ");
+
+            var attrListViewSource = Observable.Create<WindowHandle>(observer =>
+            {
+                var attrListView = TopLevelWindowUtils.FindWindows(w => w.IsValid)
+                .Where(w => w.GetWindowText().Contains("拡張属性編集")).FirstOrDefault()
+                .FindChildWindows(w => w.IsValid)
+                .Where(w => w.GetClassName().Contains("#"))
+                .FindChildWindows(w => w.GetClassName() == "SysListView32")
+                .SelectMany(s => s)
+                .Where(w => w.IsValid).FirstOrDefault();
+
+                if(attrListView.IsValid)
+                {
+                    observer.OnNext(attrListView);
+                    observer.OnCompleted();
+                }
+                else
+                {
+                    observer.OnError(new InvalidOperationException("拡張属性編集ウィンドウが見つかりません"));
+                    Console.WriteLine("not found");
+                }
+
+                return Disposable.Empty;
+            });
+
+            Observable.Defer(() => attrListViewSource)
+                .DelaySubscription(new TimeSpan(0, 0, 0, 0, 10))
+                .Retry()
+                .Subscribe(
+                    s => Console.WriteLine("OnNext: {0}", s),
+                    ex => Console.WriteLine("OnError: {0}", ex),
+                    () => Console.WriteLine("OnCompleted")
+                );
+
         }
     }
 }
