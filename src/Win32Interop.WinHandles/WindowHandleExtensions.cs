@@ -231,6 +231,35 @@ namespace Win32Interop.WinHandles
             }
         }
 
+        public static bool IsSelectedListViewItem(this WindowHandle windowHandle, int row)
+        {
+            if (windowHandle.GetClassName() == "SysListView32")
+            {
+                return GetListViewItem.ListViewHandle.IsSelectedRow(windowHandle.RawPtr, row);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool IsSelectedListViewItem(this WindowHandle windowHandle, string itemName)
+        {
+            if (windowHandle.GetClassName() == "SysListView32")
+            {
+                var rowNum = GetListViewItem.ListViewHandle.Count(windowHandle.RawPtr);
+                for (int i = 0; i < rowNum; i++)
+                {
+                    if (GetListViewItem.ListViewHandle.GetItemText(windowHandle.RawPtr, i, 0) == itemName)
+                    {
+                        return IsSelectedListViewItem(windowHandle, i);
+                    }
+                }
+            }
+
+            return false;
+        }
+
         private static IntPtr MakeParam(IntPtr intPtr)
         {
             IntPtr id = NativeMethods.GetWindowLongPtr(intPtr, GWL_ID);

@@ -12,8 +12,10 @@ namespace Win32Interop.WinHandles.GetListViewItem
     {
         private const int LVM_GETITEMCOUNT = (0x1000 + 4);
         private const int LVM_SETITEMSTATE = (0x1000 + 43);
+        private const int LVM_GETITEMSTATE = (0x1000 + 44);
         private const int LVM_GETSELECTEDCOUNT = (0x1000 + 50);
 
+        private const int LVIS_FOCUSED = 0x0001;
         private const int LVIS_SELECTED = 0x0002;
 
         public static int Count(IntPtr intPtr) => SendMessage(intPtr, LVM_GETITEMCOUNT, IntPtr.Zero, IntPtr.Zero).ToInt32();
@@ -56,6 +58,11 @@ namespace Win32Interop.WinHandles.GetListViewItem
                     }
                 }
             }
+        }
+
+        public static bool IsSelectedRow(IntPtr hwnd, int rowNo)
+        {
+            return SendMessage(hwnd, LVM_GETITEMSTATE, new IntPtr(rowNo), new IntPtr(LVIS_SELECTED)) != IntPtr.Zero;
         }
     }
 }
